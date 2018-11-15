@@ -11,7 +11,7 @@ def setup():
     screen = pygame.display.set_mode((700, 400))
     space = pymunk.Space()
     space.gravity = (0.0, 0.0)
-    space.damping = .97
+    space.damping = .98
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     clock = pygame.time.Clock()
     return screen, space, draw_options, clock
@@ -52,8 +52,8 @@ def run():
     screen, space, draw_options, clock = setup()
     space.add(createBorder(space))
     running = True
-    ball = createBall(space, .1, 3, 15, 450, 200)
-    player = createBall(space, 1.0, 1000000, 20, 300, 200)
+    ball = createBall(space, .1, 3, 10, 450, 200)
+    player = createBall(space, 1.0, 1000000, 13, 300, 200)
 
     while running:
         for event in pygame.event.get():
@@ -75,11 +75,11 @@ def run():
         if (keys[K_RIGHT]):
             player.position += Vec2d(1,0) * speed
         if (keys[K_SPACE]):
-            if (get_distance(player, ball) < 36):
+            if (get_distance(player, ball) < 23):
                 impulse = Vec2d(-1*(player.position.x-ball.position.x)/2, -1*(player.position.y-ball.position.y)/2)
                 ball.apply_impulse_at_world_point((impulse), (player.position))
 
-        if (get_distance(player, ball) < 36):
+        if (get_distance(player, ball) < 23):
             impulse = Vec2d(-1*(player.position.x-ball.position.x)/20, -1*(player.position.y-ball.position.y)/20)
             ball.apply_impulse_at_world_point((impulse), (player.position))
 
