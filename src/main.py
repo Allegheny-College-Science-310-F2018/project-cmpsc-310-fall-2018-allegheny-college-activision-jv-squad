@@ -26,9 +26,10 @@ def createBorder(space):
     for line in static_lines:
         line.elasticity = .95
         line.friction = .1
+        line.color = pygame.color.THECOLORS["white"]
     return static_lines
 
-def createBall(space, friction, mass, radius, x, y):
+def createBall(space, friction, mass, radius, x, y, color):
     inertia = pymunk.moment_for_circle(mass, 0, radius, (0,0))
     body = pymunk.Body(mass, inertia)
     body.position = x, y
@@ -36,6 +37,7 @@ def createBall(space, friction, mass, radius, x, y):
     shape.collision_type = 3
     shape.elasticity = .9
     shape.friction = friction
+    shape.color = pygame.color.THECOLORS[color]
     space.add(body, shape)
     return body
 
@@ -52,8 +54,8 @@ def run():
     screen, space, draw_options, clock = setup()
     space.add(createBorder(space))
     running = True
-    ball = createBall(space, .1, 3, 10, 450, 200)
-    player = createBall(space, 1.0, 1000000, 13, 300, 200)
+    ball = createBall(space, .1, 3, 10, 450, 200, "white")
+    player = createBall(space, 1.0, 1000000, 13, 300, 200, "blue")
 
     while running:
         for event in pygame.event.get():
@@ -83,7 +85,7 @@ def run():
             impulse = Vec2d(-1*(player.position.x-ball.position.x)/20, -1*(player.position.y-ball.position.y)/20)
             ball.apply_impulse_at_world_point((impulse), (player.position))
 
-        screen.fill(THECOLORS["white"])
+        screen.fill(THECOLORS["green"])
         space.debug_draw(draw_options)
         dt = 1.0/60.0
         for x in range(100):
