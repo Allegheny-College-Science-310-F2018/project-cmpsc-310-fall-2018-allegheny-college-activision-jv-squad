@@ -11,6 +11,7 @@ def setup():
     screen = pygame.display.set_mode((700, 400))
     space = pymunk.Space()
     space.gravity = (0.0, 0.0)
+    space.damping = .99
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     clock = pygame.time.Clock()
     return screen, space, draw_options, clock
@@ -19,9 +20,9 @@ def createBorder(space):
     static_body = space.static_body
     static_lines = list()
     static_lines.append(pymunk.Segment(static_body, (25.0, 25.0), (675.0, 25.0), 0.0))
-    static_lines.append(pymunk.Segment(static_body, (25.0, 25.0), (25.0, 475.0), 0.0))
-    static_lines.append(pymunk.Segment(static_body, (25.0, 475.0), (675.0, 475.0), 0.0))
-    static_lines.append(pymunk.Segment(static_body, (675.0, 25.0), (675.0, 475.0), 0.0))
+    static_lines.append(pymunk.Segment(static_body, (25.0, 25.0), (25.0, 375.0), 0.0))
+    static_lines.append(pymunk.Segment(static_body, (25.0, 375.0), (675.0, 375.0), 0.0))
+    static_lines.append(pymunk.Segment(static_body, (675.0, 25.0), (675.0, 375.0), 0.0))
     for line in static_lines:
         line.elasticity = .95
         line.friction = .1
@@ -35,16 +36,27 @@ def createBall(space, friction, mass, radius, x, y):
     shape.collision_type = 3
     shape.elasticity = 1.0
     shape.friction = friction
-    body.velocity = 10
     space.add(body, shape)
     return body
+
+def get_distance(obj1, obj2):
+    x1 = obj1.position.x
+    y1 = obj1.position.y
+    x2 = obj2.position.x
+    y2 = obj2.position.y
+    distance = (x2 - x1)**2 + (y2 - y1)**2
+    distance = math.sqrt(distance)
+    return distance
 
 def run():
     screen, space, draw_options, clock = setup()
     space.add(createBorder(space))
     running = True
     ball = createBall(space, .1, 3, 15, 450, 200)
-    player = createBall(space, .9, 10, 20, 300, 200)
+    player = createBall(space, 1.0, 1000000, 20, 300, 200)
+    # impulse = Vec2d(10, 10)
+    # print(ball.position.x)
+    # print(type(ball.position.x))
 
     while running:
         for event in pygame.event.get():
@@ -65,11 +77,22 @@ def run():
             player.position += Vec2d(-1,0) * speed
         if (keys[K_RIGHT]):
             player.position += Vec2d(1,0) * speed
+        if (keys[K_SPACE]):
+            # print(impulse)
+            # print(get_distance(player, ball))
+            # print("\n")
+            if (get_distance(player, ball) < 35):
+                impulse = Vec2d(-1*(player.position.x-ball.position.x)/5, -1*(player.position.y-ball.position.y)/5)
+                ball.apply_impulse_at_world_point((impulse), (player.position))
+
+        if (get_distance(player, ball) < 35):
+            impulse = Vec2d(-1*(player.position.x-ball.position.x)/20, -1*(player.position.y-ball.position.y)/20)
+            ball.apply_impulse_at_world_point((impulse), (player.position))
 
         screen.fill(THECOLORS["white"])
         space.debug_draw(draw_options)
         dt = 1.0/60.0
-        for x in range(1):
+        for x in range(10):
             space.step(dt)
         pygame.display.flip()
         clock.tick(50)
