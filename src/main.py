@@ -11,7 +11,7 @@ def setup():
     screen = pygame.display.set_mode((700, 400))
     space = pymunk.Space()
     space.gravity = (0.0, 0.0)
-    space.damping = .99
+    space.damping = .97
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     clock = pygame.time.Clock()
     return screen, space, draw_options, clock
@@ -34,7 +34,7 @@ def createBall(space, friction, mass, radius, x, y):
     body.position = x, y
     shape = pymunk.Circle(body, radius, (0,0))
     shape.collision_type = 3
-    shape.elasticity = 1.0
+    shape.elasticity = .9
     shape.friction = friction
     space.add(body, shape)
     return body
@@ -54,9 +54,6 @@ def run():
     running = True
     ball = createBall(space, .1, 3, 15, 450, 200)
     player = createBall(space, 1.0, 1000000, 20, 300, 200)
-    # impulse = Vec2d(10, 10)
-    # print(ball.position.x)
-    # print(type(ball.position.x))
 
     while running:
         for event in pygame.event.get():
@@ -68,7 +65,7 @@ def run():
                 pygame.image.save(screen, "bouncing_balls.png")
 
         keys = pygame.key.get_pressed()
-        speed = 2.5
+        speed = 3.0
         if (keys[K_UP]):
             player.position += Vec2d(0,1) * speed
         if (keys[K_DOWN]):
@@ -78,21 +75,18 @@ def run():
         if (keys[K_RIGHT]):
             player.position += Vec2d(1,0) * speed
         if (keys[K_SPACE]):
-            # print(impulse)
-            # print(get_distance(player, ball))
-            # print("\n")
-            if (get_distance(player, ball) < 35):
-                impulse = Vec2d(-1*(player.position.x-ball.position.x)/5, -1*(player.position.y-ball.position.y)/5)
+            if (get_distance(player, ball) < 36):
+                impulse = Vec2d(-1*(player.position.x-ball.position.x)/2, -1*(player.position.y-ball.position.y)/2)
                 ball.apply_impulse_at_world_point((impulse), (player.position))
 
-        if (get_distance(player, ball) < 35):
+        if (get_distance(player, ball) < 36):
             impulse = Vec2d(-1*(player.position.x-ball.position.x)/20, -1*(player.position.y-ball.position.y)/20)
             ball.apply_impulse_at_world_point((impulse), (player.position))
 
         screen.fill(THECOLORS["white"])
         space.debug_draw(draw_options)
         dt = 1.0/60.0
-        for x in range(10):
+        for x in range(100):
             space.step(dt)
         pygame.display.flip()
         clock.tick(50)
