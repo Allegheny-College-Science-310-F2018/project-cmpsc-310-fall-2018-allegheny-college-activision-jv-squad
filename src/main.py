@@ -62,6 +62,9 @@ def run():
     ball = createBall(space, .1, 3, 10, 450, 200, "white")
     player = createBall(space, 1.0, 1000000, 13, 300, 200, "blue")
 
+    speed = 0
+    last_keys = list()
+
     while running:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -72,15 +75,38 @@ def run():
                 pygame.image.save(screen, "bouncing_balls.png")
 
         keys = pygame.key.get_pressed()
-        speed = 3.0
+
+        if (keys[K_UP] or keys[K_DOWN] or keys[K_LEFT] or keys[K_RIGHT]):
+            if (speed > 3.0):
+                speed = 3.0
+            else:
+                speed = speed + .05
+            last_keys.clear()
+        if (not keys[K_UP] and not keys[K_DOWN] and not keys[K_LEFT] and not keys[K_RIGHT]):
+            if (speed <= 0):
+                speed = 0
+            else:
+                speed = speed - .05
+                if ("UP" in last_keys):
+                    player.position += Vec2d(0,1) * speed
+                if ("DOWN" in last_keys):
+                    player.position += Vec2d(0,-1) * speed
+                if ("LEFT" in last_keys):
+                    player.position += Vec2d(-1,0) * speed
+                if ("RIGHT" in last_keys):
+                    player.position += Vec2d(1,0) * speed
         if (keys[K_UP]):
             player.position += Vec2d(0,1) * speed
+            last_keys.append("UP")
         if (keys[K_DOWN]):
             player.position += Vec2d(0,-1) * speed
+            last_keys.append("DOWN")
         if (keys[K_LEFT]):
             player.position += Vec2d(-1,0) * speed
+            last_keys.append("LEFT")
         if (keys[K_RIGHT]):
             player.position += Vec2d(1,0) * speed
+            last_keys.append("RIGHT")
         if (keys[K_SPACE]):
             make_impulse(player, ball, (1/2))
 
