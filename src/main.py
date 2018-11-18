@@ -50,6 +50,11 @@ def get_distance(obj1, obj2):
     distance = math.sqrt(distance)
     return distance
 
+def make_impulse(player, ball, magnitude):
+    if (get_distance(player, ball) < (list(player.shapes)[0].radius + list(ball.shapes)[0].radius)):
+        impulse = Vec2d(-1*(player.position.x-ball.position.x)*(magnitude), -1*(player.position.y-ball.position.y)*(magnitude))
+        ball.apply_impulse_at_world_point((impulse), (player.position))
+
 def run():
     screen, space, draw_options, clock = setup()
     space.add(createBorder(space))
@@ -77,25 +82,20 @@ def run():
         if (keys[K_RIGHT]):
             player.position += Vec2d(1,0) * speed
         if (keys[K_SPACE]):
-            if (get_distance(player, ball) < 23):
-                impulse = Vec2d(-1*(player.position.x-ball.position.x)/2, -1*(player.position.y-ball.position.y)/2)
-                ball.apply_impulse_at_world_point((impulse), (player.position))
+            make_impulse(player, ball, (1/2))
 
-        if (get_distance(player, ball) < 23):
-            impulse = Vec2d(-1*(player.position.x-ball.position.x)/20, -1*(player.position.y-ball.position.y)/20)
-            ball.apply_impulse_at_world_point((impulse), (player.position))
+        make_impulse(player, ball, (1/20))
 
         screen.fill(THECOLORS["green"])
         space.debug_draw(draw_options)
         dt = 1.0/60.0
-        for x in range(100):
+        for x in range(10):
             space.step(dt)
         pygame.display.flip()
         clock.tick(50)
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
 
 def main():
-    setup()
     run()
 
 if __name__ == '__main__':
