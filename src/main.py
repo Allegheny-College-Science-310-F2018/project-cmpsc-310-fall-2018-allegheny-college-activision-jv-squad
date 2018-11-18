@@ -8,13 +8,15 @@ import math, sys, random
 
 def setup():
     pygame.init()
+    pygame.font.init()
+    myfont = pygame.font.SysFont('Georgia', 18, bold=True)
     screen = pygame.display.set_mode((700, 400))
     space = pymunk.Space()
     space.gravity = (0.0, 0.0)
     space.damping = .98
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     clock = pygame.time.Clock()
-    return screen, space, draw_options, clock
+    return screen, space, draw_options, clock, myfont
 
 def createBorder(space):
     static_body = space.static_body
@@ -56,7 +58,7 @@ def make_impulse(player, ball, magnitude):
         ball.apply_impulse_at_world_point((impulse), (player.position))
 
 def run():
-    screen, space, draw_options, clock = setup()
+    screen, space, draw_options, clock, myfont = setup()
     space.add(createBorder(space))
     running = True
     ball = createBall(space, .1, 3, 10, 450, 200, "white")
@@ -65,6 +67,7 @@ def run():
     speeds = [0,0,0,0]
     last_keys = list()
     acceleration = .1
+    top_speed = 3.0
 
     while running:
         for event in pygame.event.get():
@@ -78,8 +81,8 @@ def run():
         keys = pygame.key.get_pressed()
 
         if (keys[K_UP]):
-            if (speeds[0] > 3.0):
-                speeds[0] = 3.0
+            if (speeds[0] > top_speed):
+                speeds[0] = top_speed
             else:
                 speeds[0] = speeds[0] + acceleration
             player.position += Vec2d(0,1) * speeds[0]
@@ -90,8 +93,8 @@ def run():
                 speeds[0] = speeds[0] - acceleration
             player.position += Vec2d(0,1) * speeds[0]
         if (keys[K_DOWN]):
-            if (speeds[1] > 3.0):
-                speeds[1] = 3.0
+            if (speeds[1] > top_speed):
+                speeds[1] = top_speed
             else:
                 speeds[1] = speeds[1] + acceleration
             player.position += Vec2d(0,-1) * speeds[1]
@@ -102,8 +105,8 @@ def run():
                 speeds[1] = speeds[1] - acceleration
             player.position += Vec2d(0,-1) * speeds[1]
         if (keys[K_LEFT]):
-            if (speeds[2] > 3.0):
-                speeds[2] = 3.0
+            if (speeds[2] > top_speed):
+                speeds[2] = top_speed
             else:
                 speeds[2] = speeds[2] + acceleration
             player.position += Vec2d(-1,0) * speeds[2]
@@ -114,8 +117,8 @@ def run():
                 speeds[2] = speeds[2] - acceleration
             player.position += Vec2d(-1,0) * speeds[2]
         if (keys[K_RIGHT]):
-            if (speeds[3] > 3.0):
-                speeds[3] = 3.0
+            if (speeds[3] > top_speed):
+                speeds[3] = top_speed
             else:
                 speeds[3] = speeds[3] + acceleration
             player.position += Vec2d(1,0) * speeds[3]
@@ -125,13 +128,15 @@ def run():
             else:
                 speeds[3] = speeds[3] - acceleration
             player.position += Vec2d(1,0) * speeds[3]
-        if (keys[K_SPACE]):
-            make_impulse(player, ball, (1/2))
+        # if (keys[K_SPACE]):
+        #     make_impulse(player, ball, (1/2))
 
-        make_impulse(player, ball, (1/20))
+        make_impulse(player, ball, (1/5))
 
         screen.fill(THECOLORS["green"])
         space.debug_draw(draw_options)
+        textsurface = myfont.render('Score', False, (255, 255, 255))
+        screen.blit(textsurface,(275,0))
         dt = 1.0/60.0
         for x in range(10):
             space.step(dt)
