@@ -5,12 +5,17 @@ import pymunk
 import pymunk.pygame_util
 from pymunk import Vec2d
 import math, sys, random
+import time
 
 # TODO: In order to get the AI to go to the ball, we will need to take the two
 # locations and make some linear linear equation for it using the line formula.
 # Then, we use the slope of this line in order to get some rise over run
 # fraction. We the use this to develop a sequence of inputs to be passed through
 # the movement function so that the AI moves to the ball.
+
+# TODO: We need to refactor the functionality of resetting the ball and players
+# after a goal into its own function as well as refactoring the game over
+# checker into its own function.
 
 def setup():
     pygame.init()
@@ -68,7 +73,7 @@ def createBall(space, friction, mass, radius, x, y, color):
     shape.friction = friction
     shape.color = pygame.color.THECOLORS[color]
     space.add(body, shape)
-    return body
+    return body, shape
 
 def get_distance(obj1, obj2):
     x1 = obj1.position.x
@@ -137,10 +142,11 @@ def move_player(player, speeds, keys, top_speed, acceleration):
 
 def run():
     screen, space, draw_options, clock, myfont = setup()
-    space.add(createBorder(space))
+    border = createBorder(space)
+    space.add(border)
     running = True
-    ball = createBall(space, .1, 3, 10, 350, 200, "white")
-    player = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
+    ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
+    player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
 
     team1Score = 0
     team2Score = 0
@@ -161,23 +167,41 @@ def run():
         goalChecker = goalCheck(ball)
         if (goalChecker == "team1"):
             team1Score = team1Score + 1
-            space.remove(ball, player)
-            ball = createBall(space, .1, 3, 10, 350, 200, "white")
-            player = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
+            space.remove(ball, ball_shape)
+            space.remove(player, player_shape)
+            pygame.display.update()
+            ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
+            player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
         elif (goalChecker == "team2"):
             team2Score = team2Score + 1
-            space.remove(ball, player)
-            ball = createBall(space, .1, 3, 10, 350, 200, "white")
-            player = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
+            space.remove(ball, ball_shape)
+            space.remove(player, player_shape)
+            pygame.display.update()
+            ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
+            player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
 
         if (team1Score >= 3 and team1Score - team2Score > 1):
+            myfont = pygame.font.SysFont('Georgia', 30, bold=True)
             textsurface = myfont.render('Team 1 Wins! ', False, (255, 255, 255))
-            screen.blit(textsurface,(275,100))
+            screen.fill(pygame.Color(21, 155, 50, 1))
+            screen.blit(textsurface,(253,100))
+            draw_lines(screen)
+            space.remove(ball, ball_shape)
+            space.remove(player, player_shape)
+            space.debug_draw(draw_options)
+            pygame.display.flip()
             time.sleep(5)
             break
         if(team2Score >= 3 and team2Score - team1Score > 1):
+            myfont = pygame.font.SysFont('Georgia', 30, bold=True)
             textsurface = myfont.render('Team 2 Wins! ', False, (255, 255, 255))
-            screen.blit(textsurface,(275,100))
+            screen.fill(pygame.Color(21, 155, 50, 1))
+            screen.blit(textsurface,(253,100))
+            draw_lines(screen)
+            space.remove(ball, ball_shape)
+            space.remove(player, player_shape)
+            space.debug_draw(draw_options)
+            pygame.display.flip()
             time.sleep(5)
             break
 
@@ -190,10 +214,8 @@ def run():
         screen.fill(pygame.Color(21, 155, 50, 1))
         draw_lines(screen)
         space.debug_draw(draw_options)
-        # Code that is commented will display text for the score
-        #textsurface = myfont.render('Team 1 score %s' % (team1Score), False, (255, 255, 255))
-        textsurface = myfont.render('Team 1: %s | Team 2: %s' % (str(team1Score), str(team2Score)), False, (255, 255, 255))
-        screen.blit(textsurface,(275,0))
+        textsurface = myfont.render('Team 1: %s      |      Team 2: %s' % (str(team1Score), str(team2Score)), False, (255, 255, 255))
+        screen.blit(textsurface,(241,0))
         dt = 1.0/60.0
         for x in range(10):
             space.step(dt)
