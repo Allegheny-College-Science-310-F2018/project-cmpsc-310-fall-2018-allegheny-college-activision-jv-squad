@@ -13,7 +13,7 @@ def setup():
     screen = pygame.display.set_mode((700, 400))
     space = pymunk.Space()
     space.gravity = (0.0, 0.0)
-    space.damping = .98
+    space.damping = .97
     draw_options = pymunk.pygame_util.DrawOptions(screen)
     clock = pygame.time.Clock()
     return screen, space, draw_options, clock, myfont
@@ -21,15 +21,25 @@ def setup():
 def createBorder(space):
     static_body = space.static_body
     static_lines = list()
-    static_lines.append(pymunk.Segment(static_body, (25.0, 25.0), (675.0, 25.0), 0.0))
-    static_lines.append(pymunk.Segment(static_body, (25.0, 25.0), (25.0, 375.0), 0.0))
-    static_lines.append(pymunk.Segment(static_body, (25.0, 375.0), (675.0, 375.0), 0.0))
-    static_lines.append(pymunk.Segment(static_body, (675.0, 25.0), (675.0, 375.0), 0.0))
+    static_lines.append(pymunk.Segment(static_body, (25.0, 25.0), (675.0, 25.0), 2.0))
+    static_lines.append(pymunk.Segment(static_body, (25.0, 25.0), (25.0, 375.0), 2.0))
+    static_lines.append(pymunk.Segment(static_body, (25.0, 375.0), (675.0, 375.0), 2.0))
+    static_lines.append(pymunk.Segment(static_body, (675.0, 25.0), (675.0, 375.0), 2.0))
     for line in static_lines:
         line.elasticity = .95
         line.friction = .1
         line.color = pygame.color.THECOLORS["white"]
     return static_lines
+
+def draw_lines(screen):
+    pygame.draw.line(screen, (255, 255, 255), (25, 120), (125, 120))
+    pygame.draw.line(screen, (255, 255, 255), (25, 279), (125, 279))
+    pygame.draw.line(screen, (255, 255, 255), (125, 120), (125, 279))
+    pygame.draw.line(screen, (255, 255, 255), (675, 120), (575, 120))
+    pygame.draw.line(screen, (255, 255, 255), (675, 279), (575, 279))
+    pygame.draw.line(screen, (255, 255, 255), (575, 120), (575, 279))
+    pygame.draw.line(screen, (255, 255, 255), (350, 25), (350, 375))
+
 
 def createBall(space, friction, mass, radius, x, y, color):
     inertia = pymunk.moment_for_circle(mass, 0, radius, (0,0))
@@ -62,7 +72,7 @@ def run():
     space.add(createBorder(space))
     running = True
     ball = createBall(space, .1, 3, 10, 450, 200, "white")
-    player = createBall(space, 1.0, 1000000, 13, 300, 200, "blue")
+    player = createBall(space, 1.0, 1000000, 13, 300, 200, "dodgerblue4")
 
     speeds = [0,0,0,0]
     last_keys = list()
@@ -133,10 +143,12 @@ def run():
 
         make_impulse(player, ball, (1/5))
 
-        screen.fill(THECOLORS["green"])
+        screen.fill(pygame.Color(21, 155, 50, 1))
+        draw_lines(screen)
         space.debug_draw(draw_options)
-        textsurface = myfont.render('Score', False, (255, 255, 255))
-        screen.blit(textsurface,(275,0))
+        # Code that is commented will display text for the score
+        # textsurface = myfont.render('Score', False, (255, 255, 255))
+        # screen.blit(textsurface,(275,0))
         dt = 1.0/60.0
         for x in range(10):
             space.step(dt)
