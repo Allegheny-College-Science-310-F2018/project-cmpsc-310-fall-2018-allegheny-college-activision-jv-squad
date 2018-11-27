@@ -18,6 +18,10 @@ from fractions import Fraction
 # after a goal into its own function as well as refactoring the game over
 # checker into its own function.
 
+# TODO: Path finding is better. However, not as smooth when it is close to the
+# ball horizontally. It loses speed if the ball is moving and thats why it is
+# jagged. Need to figure out how to account for this.
+
 def setup():
     pygame.init()
     pygame.font.init()
@@ -77,48 +81,27 @@ def createBall(space, friction, mass, radius, x, y, color):
     return body, shape
 
 def path_find(ai_player, ai_goal_location_x, ai_goal_location_y):
-    ai_current_path_y = ai_goal_location_y - ai_player.position.y # Up / Down
-    ai_current_path_x = ai_goal_location_x - ai_player.position.x # Left / Right
-    slope = ai_current_path_y / ai_current_path_x
-    slope = round(slope, 1)
-    rise_run = Fraction(str(slope))
-    rise = rise_run.numerator
-    run = rise_run.denominator
     keys_to_press = list()
 
-    print("Rise = "+str(rise))
-    print("Run = "+str(run))
+    ai_current_path_y = ai_goal_location_y - ai_player.position.y # Up / Down
 
-    for r1, r2 in zip(range(0,abs(rise)), range(0,abs(run))):
+    for i in range(0, abs(int(ai_current_path_y/3))):
         keys = [0 for i in range(0,323)]
-        if rise >= 0:
-            keys[K_DOWN] = 1
-        else:
+        if ai_current_path_y >= 0:
             keys[K_UP] = 1
-        if run >= 0:
-            keys[K_LEFT] = 1
         else:
-            keys[K_RIGHT] = 1
+            keys[K_DOWN] = 1
         keys_to_press.append(tuple(keys))
 
-    for r in range(0, abs(abs(rise)-abs(run))):
+    ai_current_path_x = ai_goal_location_x - ai_player.position.x # Left / Right
+
+    for i in range(0, abs(int(ai_current_path_x/3))):
         keys = [0 for i in range(0,323)]
-        if (rise > run):
-            if rise >= 0:
-                keys[K_DOWN] = 1
-            else:
-                keys[K_UP] = 1
+        if ai_current_path_x >= 0:
+            keys[K_RIGHT] = 1
         else:
-            if run >= 0:
-                keys[K_LEFT] = 1
-            else:
-                keys[K_RIGHT] = 1
+            keys[K_LEFT] = 1
         keys_to_press.append(tuple(keys))
-
-    if len(keys_to_press % 2 == 1):
-        del keys_to_press[len(keys_to_press) - 1]
-
-    # print(str(keys_to_press))
 
     return keys_to_press
 
@@ -200,12 +183,27 @@ def print_direction(keys):
         dir = dir + "RIGHT "
     print(dir)
 
+def game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape):
+    myfont = pygame.font.SysFont('Georgia', 30, bold=True)
+    textsurface = myfont.render('Team 1 Wins! ', False, (255, 255, 255))
+    screen.fill(pygame.Color(21, 155, 50, 1))
+    screen.blit(textsurface,(253,100))
+    draw_lines(screen)
+    space.remove(ball, ball_shape)
+    space.remove(player, player_shape)
+    space.remove(ai_player, ai_player_shape)
+    space.debug_draw(draw_options)
+    pygame.display.flip()
+    time.sleep(5)
+
 def run():
     screen, space, draw_options, clock, myfont = setup()
     border = createBorder(space)
     space.add(border)
+
     running = True
-    ball, ball_shape = createBall(space, .1, 3, 10, 350, 300, "white")
+
+    ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
     player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
     ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
 
@@ -230,77 +228,76 @@ def run():
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "bouncing_balls.png")
 
+        # Check for score
         goalChecker = goalCheck(ball)
         if (goalChecker == "team1"):
             team1Score = team1Score + 1
             space.remove(ball, ball_shape)
             space.remove(player, player_shape)
+            space.remove(ai_player, ai_player_shape)
             pygame.display.update()
+            speeds = [0,0,0,0]
+            ai_speeds = [0,0,0,0]
+            ai_keys_to_press = []
+            ai_goal_location_x = None
+            ai_goal_location_y = None
             ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
             player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
+            ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
         elif (goalChecker == "team2"):
             team2Score = team2Score + 1
             space.remove(ball, ball_shape)
             space.remove(player, player_shape)
+            space.remove(ai_player, ai_player_shape)
             pygame.display.update()
+            speeds = [0,0,0,0]
+            ai_speeds = [0,0,0,0]
+            ai_keys_to_press = []
+            ai_goal_location_x = None
+            ai_goal_location_y = None
             ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
             player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
+            ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
 
+        # Game over
         if (team1Score >= 3 and team1Score - team2Score > 1):
-            myfont = pygame.font.SysFont('Georgia', 30, bold=True)
-            textsurface = myfont.render('Team 1 Wins! ', False, (255, 255, 255))
-            screen.fill(pygame.Color(21, 155, 50, 1))
-            screen.blit(textsurface,(253,100))
-            draw_lines(screen)
-            space.remove(ball, ball_shape)
-            space.remove(player, player_shape)
-            space.debug_draw(draw_options)
-            pygame.display.flip()
-            time.sleep(5)
+            game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape)
             break
         if(team2Score >= 3 and team2Score - team1Score > 1):
-            myfont = pygame.font.SysFont('Georgia', 30, bold=True)
-            textsurface = myfont.render('Team 2 Wins! ', False, (255, 255, 255))
-            screen.fill(pygame.Color(21, 155, 50, 1))
-            screen.blit(textsurface,(253,100))
-            draw_lines(screen)
-            space.remove(ball, ball_shape)
-            space.remove(player, player_shape)
-            space.debug_draw(draw_options)
-            pygame.display.flip()
-            time.sleep(5)
+            game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape)
             break
 
-
-        if (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y):
+        # AI Stuff
+        if ((ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
             ai_goal_location_x = ball.position.x
             ai_goal_location_y = ball.position.y
             ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y)
-            for a in ai_keys_to_press:
-                print_direction(a)
 
         if (len(ai_keys_to_press) > 0):
-            # print_direction(ai_keys_to_press[0])
             speeds_ai = move_player(ai_player, speeds_ai, ai_keys_to_press[0], top_speed, acceleration)
-            ai_keys_to_press.append(ai_keys_to_press[0])
             del ai_keys_to_press[0]
         else:
             speeds_ai = move_player(ai_player, speeds_ai, tuple([0 for i in range(0,323)]), top_speed, acceleration)
+        make_impulse(ai_player, ball, (1/5), speeds_ai)
 
+        # User stuff
         keys = pygame.key.get_pressed()
-
         speeds = move_player(player, speeds, keys, top_speed, acceleration)
-
         make_impulse(player, ball, (1/5), speeds)
 
+        # Update Visualize
         screen.fill(pygame.Color(21, 155, 50, 1))
         draw_lines(screen)
         space.debug_draw(draw_options)
         textsurface = myfont.render('Team 1: %s      |      Team 2: %s' % (str(team1Score), str(team2Score)), False, (255, 255, 255))
         screen.blit(textsurface,(241,0))
+
+        # Update physics
         dt = 1.0/60.0
         for x in range(10):
             space.step(dt)
+
+        # Misc
         pygame.display.flip()
         clock.tick(50)
         pygame.display.set_caption("fps: " + str(clock.get_fps()))
