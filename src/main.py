@@ -22,6 +22,15 @@ from fractions import Fraction
 # ball horizontally. It loses speed if the ball is moving and thats why it is
 # jagged. Need to figure out how to account for this.
 
+# TODO: The reason it is slow is because it does up and down movement first, and
+# then left to right. However, it the ball location updates before the ai can
+# try and do the left to right commands.
+
+# TODO: Whenever the ball goes through the wall, we should reset it back to the
+# location it was before going through the wall. This is only if we cannot fix
+# it going through. May need to do projected path of ball when tracking the
+# ball.
+
 def setup():
     pygame.init()
     pygame.font.init()
@@ -102,6 +111,8 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y):
         else:
             keys[K_LEFT] = 1
         keys_to_press.append(tuple(keys))
+
+    # print(ai_current_path_x, ", ", ai_current_path_y)
 
     return keys_to_press
 
@@ -208,8 +219,8 @@ def run():
     ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
 
     ai_keys_to_press = []
-    ai_goal_location_x = None
-    ai_goal_location_y = None
+    ai_goal_location_x = 0
+    ai_goal_location_y = 0
 
     team1Score = 0
     team2Score = 0
@@ -239,8 +250,8 @@ def run():
             speeds = [0,0,0,0]
             ai_speeds = [0,0,0,0]
             ai_keys_to_press = []
-            ai_goal_location_x = None
-            ai_goal_location_y = None
+            ai_goal_location_x = 0
+            ai_goal_location_y = 0
             ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
             player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
             ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
@@ -253,8 +264,8 @@ def run():
             speeds = [0,0,0,0]
             ai_speeds = [0,0,0,0]
             ai_keys_to_press = []
-            ai_goal_location_x = None
-            ai_goal_location_y = None
+            ai_goal_location_x = 0
+            ai_goal_location_y = 0
             ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
             player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
             ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
@@ -268,7 +279,7 @@ def run():
             break
 
         # AI Stuff
-        if ((ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
+        if ((abs(ai_goal_location_y - ball.position.y) >= 100 or abs(ai_goal_location_x - ball.position.x) >= 100 or len(ai_keys_to_press) == 0) and (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
             ai_goal_location_x = ball.position.x
             ai_goal_location_y = ball.position.y
             ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y)
