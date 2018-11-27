@@ -31,6 +31,9 @@ from fractions import Fraction
 # it going through. May need to do projected path of ball when tracking the
 # ball.
 
+# TODO: Shot function could just be if the ball is right next to the ai. Then do
+# a diagnal movement towards the goal.
+
 def setup():
     pygame.init()
     pygame.font.init()
@@ -101,6 +104,19 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y):
         else:
             keys[K_DOWN] = 1
         keys_to_press.append(tuple(keys))
+
+    if ai_goal_location_y - ai_player.position.y > 50:
+        iterations = (ai_goal_location_y - ai_player.position.y) * .05
+        for i in range(0, int(iterations)):
+            keys = [0 for i in range(0,323)]
+            keys[K_UP] = 1
+            keys_to_press.append(tuple(keys))
+    elif ai_goal_location_y - ai_player.position.y < -50:
+        iterations = abs(ai_goal_location_y - ai_player.position.y) * .05
+        for i in range(0, int(iterations)):
+            keys = [0 for i in range(0,323)]
+            keys[K_DOWN] = 1
+            keys_to_press.append(tuple(keys))
 
     ai_current_path_x = ai_goal_location_x - ai_player.position.x # Left / Right
 
@@ -214,7 +230,7 @@ def run():
 
     running = True
 
-    ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
+    ball, ball_shape = createBall(space, .1, 3, 10, 350, 100, "white")
     player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
     ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
 
@@ -279,7 +295,7 @@ def run():
             break
 
         # AI Stuff
-        if ((abs(ai_goal_location_y - ball.position.y) >= 100 or abs(ai_goal_location_x - ball.position.x) >= 100 or len(ai_keys_to_press) == 0) and (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
+        if ((abs(ai_goal_location_y - ball.position.y) >= 50 or abs(ai_goal_location_x - ball.position.x) >= 100 or len(ai_keys_to_press) == 0) and (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
             ai_goal_location_x = ball.position.x
             ai_goal_location_y = ball.position.y
             ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y)
