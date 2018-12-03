@@ -105,19 +105,6 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y):
             keys[K_DOWN] = 1
         keys_to_press.append(tuple(keys))
 
-    if ai_goal_location_y - ai_player.position.y > 50:
-        iterations = (ai_goal_location_y - ai_player.position.y) * .05
-        for i in range(0, int(iterations)):
-            keys = [0 for i in range(0,323)]
-            keys[K_UP] = 1
-            keys_to_press.append(tuple(keys))
-    elif ai_goal_location_y - ai_player.position.y < -50:
-        iterations = abs(ai_goal_location_y - ai_player.position.y) * .05
-        for i in range(0, int(iterations)):
-            keys = [0 for i in range(0,323)]
-            keys[K_DOWN] = 1
-            keys_to_press.append(tuple(keys))
-
     ai_current_path_x = ai_goal_location_x - ai_player.position.x # Left / Right
 
     for i in range(0, abs(int(ai_current_path_x/3))):
@@ -264,7 +251,7 @@ def run():
             space.remove(ai_player, ai_player_shape)
             pygame.display.update()
             speeds = [0,0,0,0]
-            ai_speeds = [0,0,0,0]
+            speeds_ai = [0,0,0,0]
             ai_keys_to_press = []
             ai_goal_location_x = 0
             ai_goal_location_y = 0
@@ -278,7 +265,7 @@ def run():
             space.remove(ai_player, ai_player_shape)
             pygame.display.update()
             speeds = [0,0,0,0]
-            ai_speeds = [0,0,0,0]
+            speeds_ai = [0,0,0,0]
             ai_keys_to_press = []
             ai_goal_location_x = 0
             ai_goal_location_y = 0
