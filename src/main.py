@@ -97,10 +97,15 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
 
     ai_current_path_y = ai_goal_location_y - ai_player.position.y # Up / Down
 
-    if offense and ai_goal_location_y > 220:
+    if offense and ai_goal_location_y > 280:
         ai_current_path_y = ai_current_path_y + 7.5
-    elif offense and ai_goal_location_y < 180:
+    elif offense and ai_goal_location_y < 120:
         ai_current_path_y = ai_current_path_y - 7.5
+    if 280 >= ai_goal_location_y > 200:
+        ai_current_path_y = ai_current_path_y + 22
+    elif 120 <= ai_goal_location_y < 200:
+        ai_current_path_y = ai_current_path_y - 22
+
 
     for i in range(0, abs(int(ai_current_path_y/3))):
         keys = [0 for i in range(0,323)]
@@ -109,6 +114,8 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
         else:
             keys[K_DOWN] = 1
         keys_to_press.append(tuple(keys))
+
+    print(len(keys_to_press))
 
     ai_current_path_x = ai_goal_location_x - ai_player.position.x # Left / Right
 
@@ -126,7 +133,6 @@ def shoot(player, ball, keys_to_press):
     if player.position.x <= ball.position.x or get_distance(player, ball) > (list(player.shapes)[0].radius + list(ball.shapes)[0].radius) + 1:
         return keys_to_press
     to_press = list()
-    print("\nSHOOTING!!! ",SHOTS)
     # if abs(player.position.y - ball.position.y) <= 5:
     if 180 <= ball.position.y <= 220:
         # Left
@@ -256,9 +262,9 @@ def run():
 
     running = True
 
-    ball, ball_shape = createBall(space, .1, 3, 10, 300, 100, "white")
+    ball, ball_shape = createBall(space, .1, 3, 10, 300, 180, "white")
     player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
-    ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
+    ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 100, "red3")
 
     ai_keys_to_press = []
     ai_goal_location_x = 0
@@ -279,7 +285,7 @@ def run():
             elif event.type == KEYDOWN and event.key == K_ESCAPE:
                 running = False
             elif event.type == KEYDOWN and event.key == K_p:
-                pygame.image.save(screen, "bouncing_balls.png")
+                pygame.image.save(screen, "game_screenshot.png")
 
         # Check for score
         goalChecker = goalCheck(ball)
