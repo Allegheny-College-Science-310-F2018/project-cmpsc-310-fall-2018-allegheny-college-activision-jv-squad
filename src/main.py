@@ -97,17 +97,44 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
 
     ai_current_path_y = ai_goal_location_y - ai_player.position.y # Up / Down
 
-    if offense and ai_goal_location_y > 280:
+    if offense and ai_current_path_y > 80:
         ai_current_path_y = ai_current_path_y + 7.5
-    elif offense and ai_goal_location_y < 120:
+    elif offense and ai_current_path_y < -80:
         ai_current_path_y = ai_current_path_y - 7.5
-    if 280 >= ai_goal_location_y > 200:
-        ai_current_path_y = ai_current_path_y + 22
-    elif 120 <= ai_goal_location_y < 200:
-        ai_current_path_y = ai_current_path_y - 22
+
+    total = 0
+    current_speed = max(abs(speeds[0]),abs(speeds[1]))
+    iterations = 0
+
+    while total < abs(ai_current_path_y):
+        # print("ONE ",current_speed)
+        iterations = iterations + 1
+        total = total + current_speed
+        if current_speed < top_speed:
+            current_speed = current_speed + acceleration
+
+    # while current_speed > 0:
+    #     # print(current_speed)
+    #     iterations = iterations - 1
+    #     current_speed = current_speed - acceleration * 1.75
+
+    print(ai_current_path_y)
+    if (abs(ai_current_path_y) < 60):
+        print("ONE")
+        iterations = iterations * .7
+    else:
+        print("TWO")
+        iterations = iterations * .675
+
+    print("Should be ",iterations)
+
+    # if 80 >= ai_current_path_y > 0:
+    #     ai_current_path_y = ai_current_path_y + 5
+    # elif -80 <= ai_current_path_y < 0:
+    #     ai_current_path_y = ai_current_path_y - 5
 
 
-    for i in range(0, abs(int(ai_current_path_y/3))):
+    for i in range(0, int(iterations)):
         keys = [0 for i in range(0,323)]
         if ai_current_path_y >= 0:
             keys[K_UP] = 1
@@ -262,9 +289,9 @@ def run():
 
     running = True
 
-    ball, ball_shape = createBall(space, .1, 3, 10, 300, 180, "white")
+    ball, ball_shape = createBall(space, .1, 3, 10, 300, 150, "white")
     player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
-    ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 100, "red3")
+    ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
 
     ai_keys_to_press = []
     ai_goal_location_x = 0
@@ -327,7 +354,7 @@ def run():
             break
 
         # AI Stuff
-        if ((abs(ai_goal_location_y - ball.position.y) >= 50 or abs(ai_goal_location_x - ball.position.x) >= 100 or len(ai_keys_to_press) == 0) and (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
+        if ((abs(ai_goal_location_y - ball.position.y) >= 30 or abs(ai_goal_location_x - ball.position.x) >= 100 or len(ai_keys_to_press) == 0) and (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
             ai_goal_location_x = ball.position.x
             ai_goal_location_y = ball.position.y
             ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
