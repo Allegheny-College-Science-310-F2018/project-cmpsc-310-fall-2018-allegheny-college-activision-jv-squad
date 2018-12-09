@@ -92,22 +92,17 @@ def createBall(space, friction, mass, radius, x, y, color):
     space.add(body, shape)
     return body, shape
 
-def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceleration, top_speed):
+def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceleration, top_speed, offense=True):
     keys_to_press = list()
 
     ai_current_path_y = ai_goal_location_y - ai_player.position.y # Up / Down
 
-    y_speed = max(abs(speeds[0]),abs(speeds[1]))
-    length = 0
-    current_dist = 0
-    while current_dist < abs(ai_current_path_y):
-        length = length + 1
-        current_dist = current_dist + y_speed
-        y_speed = y_speed + acceleration
-        if (y_speed > top_speed):
-            y_speed = top_speed
+    if offense and ai_goal_location_y > 220:
+        ai_current_path_y = ai_current_path_y + 7.5
+    elif offense and ai_goal_location_y < 180:
+        ai_current_path_y = ai_current_path_y - 7.5
 
-    for i in range(0, length):
+    for i in range(0, abs(int(ai_current_path_y/3))):
         keys = [0 for i in range(0,323)]
         if ai_current_path_y >= 0:
             keys[K_UP] = 1
@@ -117,16 +112,6 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
 
     ai_current_path_x = ai_goal_location_x - ai_player.position.x # Left / Right
 
-    x_speed = max(abs(speeds[2]),abs(speeds[3]))
-    length = 0
-    current_dist = 0
-    while current_dist < abs(ai_current_path_y):
-        length = length + 1
-        current_dist = current_dist + x_speed
-        x_speed = x_speed + acceleration
-        if (x_speed > top_speed):
-            x_speed = top_speed
-
     for i in range(0, abs(int(ai_current_path_x/3))):
         keys = [0 for i in range(0,323)]
         if ai_current_path_x >= 0:
@@ -135,25 +120,26 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
             keys[K_LEFT] = 1
         keys_to_press.append(tuple(keys))
 
-    # print(ai_current_path_x, ", ", ai_current_path_y)
-
     return keys_to_press
 
 def shoot(player, ball, keys_to_press):
     if player.position.x <= ball.position.x or get_distance(player, ball) > (list(player.shapes)[0].radius + list(ball.shapes)[0].radius) + 1:
         return keys_to_press
     to_press = list()
-    print("SHOOTING!!!")
-    if abs(player.position.y - ball.position.y) <= 5:
+    print("\nSHOOTING!!! ",SHOTS)
+    # if abs(player.position.y - ball.position.y) <= 5:
+    if 180 <= ball.position.y <= 220:
         # Left
+        print("LEFT")
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
         to_press.append(tuple(keys))
         to_press.append(tuple(keys))
         to_press.append(tuple(keys))
         return to_press
-    elif player.position.y > ball.position.y:
+    elif ball.position.y > 220:
         # Left down
+        print("LEFT DOWN")
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
         keys[K_DOWN] = 1
@@ -163,6 +149,7 @@ def shoot(player, ball, keys_to_press):
         return to_press
     else:
         # Left up
+        print("LEFT UP")
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
         keys[K_UP] = 1
@@ -269,7 +256,7 @@ def run():
 
     running = True
 
-    ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
+    ball, ball_shape = createBall(space, .1, 3, 10, 300, 100, "white")
     player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
     ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
 
