@@ -125,35 +125,59 @@ def play_defense(ball):
     return x, y
 
 
-def shoot(player, ball, keys_to_press):
+def shoot(player, ball, keys_to_press, defending):
     if player.position.x <= ball.position.x or get_distance(player, ball) > (list(player.shapes)[0].radius + list(ball.shapes)[0].radius) + 1:
         return keys_to_press
     to_press = list()
     print("SHOOTING")
-    # if abs(player.position.y - ball.position.y) <= 5:
-    if 180 <= ball.position.y <= 220:
-        # Left
-        keys = [0 for i in range(0,323)]
-        keys[K_LEFT] = 1
-        for i in range(0, 21):
-            to_press.append(tuple(keys))
-        return to_press
-    elif ball.position.y > 220:
-        # Left down
-        keys = [0 for i in range(0,323)]
-        keys[K_LEFT] = 1
-        keys[K_DOWN] = 1
-        for i in range(0, 21):
-            to_press.append(tuple(keys))
-        return to_press
+    if defending:
+        if abs(player.position.y - ball.position.y) <= 5:
+            # Left
+            keys = [0 for i in range(0,323)]
+            keys[K_LEFT] = 1
+            for i in range(0, 13):
+                to_press.append(tuple(keys))
+            return to_press
+        elif player.position.y > ball.position.y:
+            # Left down
+            keys = [0 for i in range(0,323)]
+            keys[K_LEFT] = 1
+            keys[K_DOWN] = 1
+            for i in range(0, 13):
+                to_press.append(tuple(keys))
+            return to_press
+        else:
+            # Left up
+            keys = [0 for i in range(0,323)]
+            keys[K_LEFT] = 1
+            keys[K_UP] = 1
+            for i in range(0, 13):
+                to_press.append(tuple(keys))
+            return to_press
     else:
-        # Left up
-        keys = [0 for i in range(0,323)]
-        keys[K_LEFT] = 1
-        keys[K_UP] = 1
-        for i in range(0, 21):
-            to_press.append(tuple(keys))
-        return to_press
+        if 180 <= ball.position.y <= 220:
+            # Left
+            keys = [0 for i in range(0,323)]
+            keys[K_LEFT] = 1
+            for i in range(0, 13):
+                to_press.append(tuple(keys))
+            return to_press
+        elif ball.position.y > 220:
+            # Left down
+            keys = [0 for i in range(0,323)]
+            keys[K_LEFT] = 1
+            keys[K_DOWN] = 1
+            for i in range(0, 13):
+                to_press.append(tuple(keys))
+            return to_press
+        else:
+            # Left up
+            keys = [0 for i in range(0,323)]
+            keys[K_LEFT] = 1
+            keys[K_UP] = 1
+            for i in range(0, 13):
+                to_press.append(tuple(keys))
+            return to_press
 
 def get_distance(obj1, obj2):
     x1 = obj1.position.x
@@ -339,7 +363,7 @@ def run():
 
         # AI Stuff
         if (defense):
-            if (len(ai_keys_to_press) == 0):
+            if (abs(ai_goal_location_y - ball.position.y) >= 20 or len(ai_keys_to_press) == 0):
                 ai_goal_location_x, ai_goal_location_y = play_defense(ball)
                 ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
         else:
@@ -348,7 +372,7 @@ def run():
                 ai_goal_location_y = ball.position.y
                 ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
 
-        ai_keys_to_press = shoot(ai_player, ball, ai_keys_to_press)
+        ai_keys_to_press = shoot(ai_player, ball, ai_keys_to_press, defense)
 
         if (len(ai_keys_to_press) > 0):
             speeds_ai = move_player(ai_player, speeds_ai, ai_keys_to_press[0], top_speed, acceleration)
