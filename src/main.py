@@ -8,31 +8,13 @@ import math, sys, random
 import time
 from fractions import Fraction
 
-# TODO: In order to get the AI to go to the ball, we will need to take the two
-# locations and make some linear equation for it using the line formula.
-# Then, we use the slope of this line in order to get some rise over run
-# fraction. We the use this to develop a sequence of inputs to be passed through
-# the movement function so that the AI moves to the ball.
-
 # TODO: We need to refactor the functionality of resetting the ball and players
-# after a goal into its own function as well as refactoring the game over
-# checker into its own function.
-
-# TODO: Path finding is better. However, not as smooth when it is close to the
-# ball horizontally. It loses speed if the ball is moving and thats why it is
-# jagged. Need to figure out how to account for this.
-
-# TODO: The reason it is slow is because it does up and down movement first, and
-# then left to right. However, it the ball location updates before the ai can
-# try and do the left to right commands.
+# after a goal into its own function
 
 # TODO: Whenever the ball goes through the wall, we should reset it back to the
 # location it was before going through the wall. This is only if we cannot fix
 # it going through. May need to do projected path of ball when tracking the
 # ball.
-
-# TODO: Shot function could just be if the ball is right next to the ai. Then do
-# a diagnal movement towards the goal.
 
 def setup():
     pygame.init()
@@ -144,7 +126,6 @@ def shoot(player, ball, keys_to_press):
     # if abs(player.position.y - ball.position.y) <= 5:
     if 180 <= ball.position.y <= 220:
         # Left
-        print("LEFT")
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
         to_press.append(tuple(keys))
@@ -153,7 +134,6 @@ def shoot(player, ball, keys_to_press):
         return to_press
     elif ball.position.y > 220:
         # Left down
-        print("LEFT DOWN")
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
         keys[K_DOWN] = 1
@@ -163,7 +143,6 @@ def shoot(player, ball, keys_to_press):
         return to_press
     else:
         # Left up
-        print("LEFT UP")
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
         keys[K_UP] = 1
@@ -250,6 +229,25 @@ def print_direction(keys):
         dir = dir + "RIGHT "
     print(dir)
 
+def reset_ball(ball, ball_shape, space):
+    if ball.position.y < 25:
+        print("RESETTING BALL Y")
+        space.remove(ball, ball_shape)
+        ball, ball_shape = createBall(space, .1, 3, 10, ball.position.x, 30, "white")
+    elif ball.position.y > 375:
+        print("RESETTING BALL Y")
+        space.remove(ball, ball_shape)
+        ball, ball_shape = createBall(space, .1, 3, 10, ball.position.x, 370, "white")
+    if ball.position.x < 25 and (ball.position.y < 130 or ball.position.y > 270):
+        print("RESETTING BALL X")
+        space.remove(ball, ball_shape)
+        ball, ball_shape = createBall(space, .1, 3, 10, 30, ball.position.y, "white")
+    elif ball.position.x > 675 and (ball.position.y < 130 or ball.position.y > 270):
+        print("RESETTING BALL X")
+        space.remove(ball, ball_shape)
+        ball, ball_shape = createBall(space, .1, 3, 10, 670, ball.position.y, "white")
+    return ball, ball_shape
+
 def game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape):
     myfont = pygame.font.SysFont('Georgia', 30, bold=True)
     textsurface = myfont.render('Team 1 Wins! ', False, (255, 255, 255))
@@ -270,7 +268,7 @@ def run():
 
     running = True
 
-    ball, ball_shape = createBall(space, .1, 3, 10, 300, 150, "white")
+    ball, ball_shape = createBall(space, .1, 3, 10, 30, 45, "white")
     player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
     ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
 
@@ -294,6 +292,9 @@ def run():
                 running = False
             elif event.type == KEYDOWN and event.key == K_p:
                 pygame.image.save(screen, "game_screenshot.png")
+
+        # Physics Problems
+        ball, ball_shape = reset_ball(ball, ball_shape, space)
 
         # Check for score
         goalChecker = goalCheck(ball)
