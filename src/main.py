@@ -107,32 +107,15 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
     iterations = 0
 
     while total < abs(ai_current_path_y):
-        # print("ONE ",current_speed)
         iterations = iterations + 1
         total = total + current_speed
         if current_speed < top_speed:
             current_speed = current_speed + acceleration
 
-    # while current_speed > 0:
-    #     # print(current_speed)
-    #     iterations = iterations - 1
-    #     current_speed = current_speed - acceleration * 1.75
-
-    print(ai_current_path_y)
     if (abs(ai_current_path_y) < 60):
-        print("ONE")
         iterations = iterations * .7
     else:
-        print("TWO")
         iterations = iterations * .675
-
-    print("Should be ",iterations)
-
-    # if 80 >= ai_current_path_y > 0:
-    #     ai_current_path_y = ai_current_path_y + 5
-    # elif -80 <= ai_current_path_y < 0:
-    #     ai_current_path_y = ai_current_path_y - 5
-
 
     for i in range(0, int(iterations)):
         keys = [0 for i in range(0,323)]
@@ -141,8 +124,6 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
         else:
             keys[K_DOWN] = 1
         keys_to_press.append(tuple(keys))
-
-    print(len(keys_to_press))
 
     ai_current_path_x = ai_goal_location_x - ai_player.position.x # Left / Right
 
