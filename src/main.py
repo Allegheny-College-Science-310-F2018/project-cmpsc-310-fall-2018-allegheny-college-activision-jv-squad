@@ -11,11 +11,6 @@ from fractions import Fraction
 # TODO: We need to refactor the functionality of resetting the ball and players
 # after a goal into its own function
 
-# TODO: Whenever the ball goes through the wall, we should reset it back to the
-# location it was before going through the wall. This is only if we cannot fix
-# it going through. May need to do projected path of ball when tracking the
-# ball.
-
 def setup():
     pygame.init()
     pygame.font.init()
@@ -94,6 +89,7 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
         if current_speed < top_speed:
             current_speed = current_speed + acceleration
 
+    # Accounting for deceleration
     if (abs(ai_current_path_y) < 60):
         iterations = iterations * .7
     else:
@@ -119,36 +115,44 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
 
     return keys_to_press
 
+def play_defense(ball):
+    x = 655
+    y = ball.position.y
+    if y > 266:
+        y = 266
+    elif y < 133:
+        y = 133
+    return x, y
+
+
 def shoot(player, ball, keys_to_press):
     if player.position.x <= ball.position.x or get_distance(player, ball) > (list(player.shapes)[0].radius + list(ball.shapes)[0].radius) + 1:
         return keys_to_press
     to_press = list()
+    print("SHOOTING")
     # if abs(player.position.y - ball.position.y) <= 5:
     if 180 <= ball.position.y <= 220:
         # Left
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
-        to_press.append(tuple(keys))
-        to_press.append(tuple(keys))
-        to_press.append(tuple(keys))
+        for i in range(0, 21):
+            to_press.append(tuple(keys))
         return to_press
     elif ball.position.y > 220:
         # Left down
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
         keys[K_DOWN] = 1
-        to_press.append(tuple(keys))
-        to_press.append(tuple(keys))
-        to_press.append(tuple(keys))
+        for i in range(0, 21):
+            to_press.append(tuple(keys))
         return to_press
     else:
         # Left up
         keys = [0 for i in range(0,323)]
         keys[K_LEFT] = 1
         keys[K_UP] = 1
-        to_press.append(tuple(keys))
-        to_press.append(tuple(keys))
-        to_press.append(tuple(keys))
+        for i in range(0, 21):
+            to_press.append(tuple(keys))
         return to_press
 
 def get_distance(obj1, obj2):
@@ -231,19 +235,15 @@ def print_direction(keys):
 
 def reset_ball(ball, ball_shape, space):
     if ball.position.y < 25:
-        print("RESETTING BALL Y")
         space.remove(ball, ball_shape)
         ball, ball_shape = createBall(space, .1, 3, 10, ball.position.x, 30, "white")
     elif ball.position.y > 375:
-        print("RESETTING BALL Y")
         space.remove(ball, ball_shape)
         ball, ball_shape = createBall(space, .1, 3, 10, ball.position.x, 370, "white")
     if ball.position.x < 25 and (ball.position.y < 130 or ball.position.y > 270):
-        print("RESETTING BALL X")
         space.remove(ball, ball_shape)
         ball, ball_shape = createBall(space, .1, 3, 10, 30, ball.position.y, "white")
     elif ball.position.x > 675 and (ball.position.y < 130 or ball.position.y > 270):
-        print("RESETTING BALL X")
         space.remove(ball, ball_shape)
         ball, ball_shape = createBall(space, .1, 3, 10, 670, ball.position.y, "white")
     return ball, ball_shape
@@ -268,7 +268,7 @@ def run():
 
     running = True
 
-    ball, ball_shape = createBall(space, .1, 3, 10, 30, 45, "white")
+    ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
     player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
     ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
 
@@ -283,6 +283,8 @@ def run():
     speeds_ai = [0,0,0,0]
     acceleration = .1
     top_speed = 3.0
+
+    defense = True
 
     while running:
         for event in pygame.event.get():
@@ -336,10 +338,15 @@ def run():
             break
 
         # AI Stuff
-        if ((abs(ai_goal_location_y - ball.position.y) >= 30 or abs(ai_goal_location_x - ball.position.x) >= 100 or len(ai_keys_to_press) == 0) and (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
-            ai_goal_location_x = ball.position.x
-            ai_goal_location_y = ball.position.y
-            ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
+        if (defense):
+            if (len(ai_keys_to_press) == 0):
+                ai_goal_location_x, ai_goal_location_y = play_defense(ball)
+                ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
+        else:
+            if ((abs(ai_goal_location_y - ball.position.y) >= 30 or abs(ai_goal_location_x - ball.position.x) >= 100 or len(ai_keys_to_press) == 0) and (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
+                ai_goal_location_x = ball.position.x
+                ai_goal_location_y = ball.position.y
+                ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
 
         ai_keys_to_press = shoot(ai_player, ball, ai_keys_to_press)
 
