@@ -7,6 +7,7 @@ from pymunk import Vec2d
 import math, sys, random
 import time
 from fractions import Fraction
+from random import randint
 
 def setup():
     pygame.init()
@@ -323,6 +324,9 @@ def run():
     defense = False
     just_switched = False
 
+    if randint(0, 1) == 0:
+        defense = True
+
     while running:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -351,6 +355,9 @@ def run():
             ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
             player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
             ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
+            defense = False
+            if randint(0, 1) == 0:
+                defense = True
         elif (goalChecker == "team2"):
             team2Score = team2Score + 1
             space.remove(ball, ball_shape)
@@ -365,6 +372,9 @@ def run():
             ball, ball_shape = createBall(space, .1, 3, 10, 350, 200, "white")
             player, player_shape = createBall(space, 1.0, 1000000, 13, 100, 200, "dodgerblue4")
             ai_player, ai_player_shape = createBall(space, 1.0, 1000000, 13, 600, 200, "red3")
+            defense = False
+            if randint(0, 1) == 0:
+                defense = True
 
         # Game over
         if (team1Score >= 3 and team1Score - team2Score > 1):
