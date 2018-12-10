@@ -8,9 +8,6 @@ import math, sys, random
 import time
 from fractions import Fraction
 
-# TODO: We need to refactor the functionality of resetting the ball and players
-# after a goal into its own function
-
 def setup():
     pygame.init()
     pygame.font.init()
@@ -81,7 +78,7 @@ def path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds, acceler
 
     total = 0
     current_speed = max(abs(speeds[0]),abs(speeds[1]))
-    iterations = 0
+    iterations = 0.
 
     while total < abs(ai_current_path_y):
         iterations = iterations + 1
@@ -124,10 +121,20 @@ def play_defense(ball):
         y = 133
     return x, y
 
+def switch_state(defense, hit_ball, ball, ai_player):
+    if defense and hit_ball:
+        print("Switching to offense!")
+        return False, True
+    else:
+        if ball.position.x >= ai_player.position.x:
+            print("Switching to defense!")
+            return True, True
+    return defense, False
+
 
 def shoot(player, ball, keys_to_press, defending):
     if player.position.x <= ball.position.x or get_distance(player, ball) > (list(player.shapes)[0].radius + list(ball.shapes)[0].radius) + 1:
-        return keys_to_press
+        return keys_to_press, False
     to_press = list()
     print("SHOOTING")
     if defending:
@@ -137,7 +144,7 @@ def shoot(player, ball, keys_to_press, defending):
             keys[K_LEFT] = 1
             for i in range(0, 13):
                 to_press.append(tuple(keys))
-            return to_press
+            return to_press, True
         elif player.position.y > ball.position.y:
             # Left down
             keys = [0 for i in range(0,323)]
@@ -145,7 +152,7 @@ def shoot(player, ball, keys_to_press, defending):
             keys[K_DOWN] = 1
             for i in range(0, 13):
                 to_press.append(tuple(keys))
-            return to_press
+            return to_press, True
         else:
             # Left up
             keys = [0 for i in range(0,323)]
@@ -153,7 +160,7 @@ def shoot(player, ball, keys_to_press, defending):
             keys[K_UP] = 1
             for i in range(0, 13):
                 to_press.append(tuple(keys))
-            return to_press
+            return to_press, True
     else:
         if 180 <= ball.position.y <= 220:
             # Left
@@ -161,7 +168,7 @@ def shoot(player, ball, keys_to_press, defending):
             keys[K_LEFT] = 1
             for i in range(0, 13):
                 to_press.append(tuple(keys))
-            return to_press
+            return to_press, True
         elif ball.position.y > 220:
             # Left down
             keys = [0 for i in range(0,323)]
@@ -169,7 +176,7 @@ def shoot(player, ball, keys_to_press, defending):
             keys[K_DOWN] = 1
             for i in range(0, 13):
                 to_press.append(tuple(keys))
-            return to_press
+            return to_press, True
         else:
             # Left up
             keys = [0 for i in range(0,323)]
@@ -177,7 +184,7 @@ def shoot(player, ball, keys_to_press, defending):
             keys[K_UP] = 1
             for i in range(0, 13):
                 to_press.append(tuple(keys))
-            return to_press
+            return to_press, True
 
 def get_distance(obj1, obj2):
     x1 = obj1.position.x
@@ -193,6 +200,7 @@ def make_impulse(player, ball, magnitude, speeds):
     if (get_distance(player, ball) < (list(player.shapes)[0].radius + list(ball.shapes)[0].radius)):
         impulse = Vec2d(-1*(player.position.x-ball.position.x)*(magnitude1), -1*(player.position.y-ball.position.y)*(magnitude1))
         ball.apply_impulse_at_world_point((impulse), (player.position))
+        return True
 
 def move_player(player, speeds, keys, top_speed, acceleration):
     if (keys[K_UP]):
@@ -308,7 +316,9 @@ def run():
     acceleration = .1
     top_speed = 3.0
 
-    defense = True
+    hit_ball = False
+    defense = False
+    just_switched = False
 
     while running:
         for event in pygame.event.get():
@@ -363,16 +373,16 @@ def run():
 
         # AI Stuff
         if (defense):
-            if (abs(ai_goal_location_y - ball.position.y) >= 20 or len(ai_keys_to_press) == 0):
+            if (not just_switched and abs(ai_goal_location_y - ball.position.y) >= 20 or len(ai_keys_to_press) == 0):
                 ai_goal_location_x, ai_goal_location_y = play_defense(ball)
                 ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
         else:
             if ((abs(ai_goal_location_y - ball.position.y) >= 30 or abs(ai_goal_location_x - ball.position.x) >= 100 or len(ai_keys_to_press) == 0) and (ai_goal_location_x is None or ai_goal_location_x != ball.position.x or ai_goal_location_y is None or ai_goal_location_y != ball.position.y)):
                 ai_goal_location_x = ball.position.x
-                ai_goal_location_y = ball.position.y
+                ai_goal_location_y =  ball.position.y
                 ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
 
-        ai_keys_to_press = shoot(ai_player, ball, ai_keys_to_press, defense)
+        ai_keys_to_press, hit_ball = shoot(ai_player, ball, ai_keys_to_press, defense)
 
         if (len(ai_keys_to_press) > 0):
             speeds_ai = move_player(ai_player, speeds_ai, ai_keys_to_press[0], top_speed, acceleration)
@@ -380,6 +390,10 @@ def run():
         else:
             speeds_ai = move_player(ai_player, speeds_ai, tuple([0 for i in range(0,323)]), top_speed, acceleration)
         make_impulse(ai_player, ball, (1/5), speeds_ai)
+        defense, just_switched = switch_state(defense, hit_ball, ball, ai_player)
+
+        if just_switched and len(ai_keys_to_press) == 0:
+            just_switched = False
 
         # User stuff
         keys = pygame.key.get_pressed()
