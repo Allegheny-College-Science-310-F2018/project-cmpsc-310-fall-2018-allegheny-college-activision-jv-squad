@@ -122,12 +122,14 @@ def play_defense(ball):
     return x, y
 
 def switch_state(defense, hit_ball, ball, ai_player, player):
-    if defense and (hit_ball or get_distance(ball, ai_player) - get_distance(ball, player) >= 300):
-        print(get_distance(ball, ai_player) - get_distance(ball, player) >= 300)
+    if defense and (hit_ball or (ai_player.position.x > 350 and get_distance(ball, player) - get_distance(ball, ai_player) >= 100)):
+        print(get_distance(ball, player))
+        print(get_distance(ball, ai_player))
+        print(get_distance(ball, player) - get_distance(ball, ai_player) >= 100)
         print("Switching to offense!")
         return False, True
     elif not defense:
-        if ball.position.x >= ai_player.position.x:
+        if ball.position.x - 25 >= ai_player.position.x:
             print("Switching to defense!")
             return True, True
     return defense, False
