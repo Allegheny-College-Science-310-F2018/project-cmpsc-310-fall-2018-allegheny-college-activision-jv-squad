@@ -121,11 +121,12 @@ def play_defense(ball):
         y = 133
     return x, y
 
-def switch_state(defense, hit_ball, ball, ai_player):
-    if defense and hit_ball:
+def switch_state(defense, hit_ball, ball, ai_player, player):
+    if defense and (hit_ball or get_distance(ball, ai_player) - get_distance(ball, player) >= 300):
+        print(get_distance(ball, ai_player) - get_distance(ball, player) >= 300)
         print("Switching to offense!")
         return False, True
-    else:
+    elif not defense:
         if ball.position.x >= ai_player.position.x:
             print("Switching to defense!")
             return True, True
@@ -373,7 +374,11 @@ def run():
 
         # AI Stuff
         if (defense):
-            if (not just_switched and abs(ai_goal_location_y - ball.position.y) >= 20 or len(ai_keys_to_press) == 0):
+            if (just_switched):
+                ai_goal_location_x, ai_goal_location_y = play_defense(ball)
+                ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
+                just_switched = False
+            elif (ai_player.position.x >= 650 and abs(ai_goal_location_y - ball.position.y) >= 50 or len(ai_keys_to_press) == 0):
                 ai_goal_location_x, ai_goal_location_y = play_defense(ball)
                 ai_keys_to_press = path_find(ai_player, ai_goal_location_x, ai_goal_location_y, speeds_ai, acceleration, top_speed)
         else:
@@ -390,7 +395,7 @@ def run():
         else:
             speeds_ai = move_player(ai_player, speeds_ai, tuple([0 for i in range(0,323)]), top_speed, acceleration)
         make_impulse(ai_player, ball, (1/5), speeds_ai)
-        defense, just_switched = switch_state(defense, hit_ball, ball, ai_player)
+        defense, just_switched = switch_state(defense, hit_ball, ball, ai_player, player)
 
         if just_switched and len(ai_keys_to_press) == 0:
             just_switched = False
