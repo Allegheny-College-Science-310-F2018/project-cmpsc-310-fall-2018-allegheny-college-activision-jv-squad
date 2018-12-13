@@ -1,3 +1,26 @@
+# JV Activision Squad
+## 2d Physics Soccer Game
+
+[Demo](https://www.youtube.com/watch?v=c2HdOJEepuU&feature=youtu.be)
+
+### How to run:
+
+1. ```pip3 install pygame```
+
+1. ```pip3 install pymunk```
+
+1. ````git clone git@github.com:Allegheny-College-Science-310-F2018/project-cmpsc-310-fall-2018-allegheny-college-activision-jv-squad.git```
+
+1. ```cd project-cmpsc-310-fall-2018-allegheny-college-activision-jv-squad```
+
+1. ```cd src```
+
+1. ```python3 main.py```
+
+
+
+
+
 
 # cs310f2018-project-starter
 
