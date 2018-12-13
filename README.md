@@ -3,6 +3,8 @@
 
 [Demo](https://www.youtube.com/watch?v=c2HdOJEepuU&feature=youtu.be)
 
+Source code can be found in *src/main.py*. Results directory holds various data that we collected.
+
 ### How to run:
 
 1. ```pip3 install pygame```
