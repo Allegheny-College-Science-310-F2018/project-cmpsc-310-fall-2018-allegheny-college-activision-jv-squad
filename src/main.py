@@ -9,6 +9,9 @@ import time
 from fractions import Fraction
 from random import randint
 
+START_TIME = time.time()
+STATE_CHANGES = []
+
 def setup():
     pygame.init()
     pygame.font.init()
@@ -123,15 +126,19 @@ def play_defense(ball):
     return x, y
 
 def switch_state(defense, hit_ball, ball, ai_player, player):
-    if defense and (hit_ball or (ai_player.position.x > 350 and get_distance(ball, player) - get_distance(ball, ai_player) >= 100)):
+    global STATE_CHANGES
+    global START_TIME
+    if defense and (hit_ball or (ai_player.position.x > 650 and get_distance(ball, player) - get_distance(ball, ai_player) >= 100)):
         print(get_distance(ball, player))
         print(get_distance(ball, ai_player))
         print(get_distance(ball, player) - get_distance(ball, ai_player) >= 100)
         print("Switching to offense!")
+        STATE_CHANGES.append(time.time()-START_TIME)
         return False, True
     elif not defense:
         if ball.position.x - 25 >= ai_player.position.x:
             print("Switching to defense!")
+            STATE_CHANGES.append(time.time()-START_TIME)
             return True, True
     return defense, False
 
@@ -284,9 +291,9 @@ def reset_ball(ball, ball_shape, space):
         ball, ball_shape = createBall(space, .1, 3, 10, 670, ball.position.y, "white")
     return ball, ball_shape
 
-def game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape):
+def game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape, team):
     myfont = pygame.font.SysFont('Georgia', 30, bold=True)
-    textsurface = myfont.render('Team 1 Wins! ', False, (255, 255, 255))
+    textsurface = myfont.render(str(team)+' Wins! ', False, (255, 255, 255))
     screen.fill(pygame.Color(21, 155, 50, 1))
     screen.blit(textsurface,(253,100))
     draw_lines(screen)
@@ -378,10 +385,10 @@ def run():
 
         # Game over
         if (team1Score >= 3 and team1Score - team2Score > 1):
-            game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape)
+            game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape, "Team 1")
             break
         if(team2Score >= 3 and team2Score - team1Score > 1):
-            game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape)
+            game_over(screen, space, draw_options, ball, ball_shape, player, player_shape, ai_player, ai_player_shape, "Team 2")
             break
 
         # AI Stuff
@@ -408,6 +415,7 @@ def run():
             speeds_ai = move_player(ai_player, speeds_ai, tuple([0 for i in range(0,323)]), top_speed, acceleration)
         make_impulse(ai_player, ball, (1/5), speeds_ai)
         defense, just_switched = switch_state(defense, hit_ball, ball, ai_player, player)
+        hit_ball = False
 
         if just_switched and len(ai_keys_to_press) == 0:
             just_switched = False
@@ -439,3 +447,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+    print("\n\n\n")
+    i = 0
+    for change in STATE_CHANGES:
+        print(str(change)+","+str(i))
+        i = i + 1
